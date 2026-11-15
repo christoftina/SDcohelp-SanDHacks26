@@ -12,26 +12,28 @@ if [ -z "$DOMAIN" ]; then
   DOMAIN="$(echo "$IP" | tr . -).sslip.io"
 fi
 
+APP_FILE="app_sandhacks.py"; [ -f "$APP_DIR/$APP_FILE" ] || APP_FILE="app.py"
+
 echo "==> Installing Python and Caddy (Caddy gives the site https, which the microphone needs)"
 apt-get update -y
 apt-get install -y python3 caddy
 
 echo "==> Creating a safe user to run the app"
-id bridgesd >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin bridgesd
+id sdcohelp >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin sdcohelp
 [ -f "$APP_DIR/.env" ] || cp "$APP_DIR/.env.example" "$APP_DIR/.env"
-chown -R bridgesd:bridgesd "$APP_DIR"
+chown -R sdcohelp:sdcohelp "$APP_DIR"
 chmod 600 "$APP_DIR/.env"
 
 echo "==> Making the app start automatically"
-cat > /etc/systemd/system/bridgesd.service <<EOF
+cat > /etc/systemd/system/sdcohelp.service <<EOF
 [Unit]
-Description=BridgeSD web app
+Description=SDcohelp web app
 After=network-online.target
 
 [Service]
-User=bridgesd
+User=sdcohelp
 WorkingDirectory=$APP_DIR
-ExecStart=/usr/bin/python3 $APP_DIR/app.py
+ExecStart=/usr/bin/python3 $APP_DIR/$APP_FILE
 Environment=HOST=127.0.0.1
 Environment=PORT=8000
 Environment=PYTHONUNBUFFERED=1
@@ -53,10 +55,12 @@ if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
 fi
 
 systemctl daemon-reload
-systemctl enable bridgesd caddy
-systemctl restart bridgesd caddy
+systemctl enable sdcohelp caddy
+systemctl restart sdcohelp caddy
 
 echo
 echo "Done! Your site:  https://$DOMAIN"
+echo "For GitHub Pages, put this line in docs/config.js:"
+echo "  window.SDCOHELP_API = \"https://$DOMAIN\";"
 echo "(The first visit can take ~30 seconds while the https certificate is created.)"
-echo "See the app's log:   journalctl -u bridgesd -f"
+echo "See the app's log:   journalctl -u sdcohelp -f"

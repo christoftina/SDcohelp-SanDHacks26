@@ -24,9 +24,9 @@ from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "sdcohelp-6"
+VERSION = "sdcohelp-7"
 ROOT = Path(__file__).resolve().parent
-STATIC = ROOT / "static"
+STATIC = ROOT / "docs"   # the website files (also published by GitHub Pages)
 DATA = ROOT / "data"
 
 
@@ -66,6 +66,9 @@ ELEVEN_VOICES = {
     "en": os.environ.get("ELEVENLABS_VOICE_ENGLISH", ""),
 }
 ELEVEN_MODEL = os.environ.get("ELEVENLABS_MODEL", "eleven_multilingual_v2")
+# Websites allowed to call this server from another address (for example GitHub Pages).
+ALLOWED_ORIGINS = [o.strip().rstrip("/") for o in os.environ.get(
+    "ALLOWED_ORIGINS", "https://christoftina.github.io").split(",") if o.strip()]
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 
@@ -572,8 +575,23 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Cache-Control", "no-store")
+        self.cors_headers()
         self.end_headers()
         self.wfile.write(body)
+
+    def cors_headers(self):
+        origin = (self.headers.get("Origin") or "").rstrip("/")
+        if origin and origin in ALLOWED_ORIGINS:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.cors_headers()
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Max-Age", "86400")
+        self.end_headers()
 
     def do_GET(self):
         path = self.path.split("?", 1)[0]

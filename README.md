@@ -24,7 +24,7 @@ source. The answer can be read out loud.
 | `app.py` | The server. Connects the website, the dataset, Gemini and ElevenLabs. |
 | `scrape.py` | Uses **Bright Data** to download the websites in `sources.json` and save the text. |
 | `sources.json` | The list of websites to collect (legal aid, CalFresh, Medi-Cal, housing, schools, adult school). |
-| `static/index.html` | The website people see. |
+| `docs/index.html` | The website people see. |
 | `data/` | Your collected dataset. `data/manual/` holds notes you type yourselves. |
 | `deploy/setup_vultr.sh` | Sets up the Vultr server in one command. |
 | `.env.example` | Template for your secret API keys. |

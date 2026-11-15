@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SDcohelp</title>
-<link rel="icon" type="image/png" href="/favicon.png">
-<link rel="apple-touch-icon" href="/logo-192.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="logo-192.png">
 <style>
   :root {
     --forest: #2d4b40; --forest-dark: #213a31; --forest-ink: #1b2f27;
@@ -24,7 +24,7 @@
   body::before {
     content: ""; position: fixed; inset: 0; z-index: -1;
     background: linear-gradient(180deg, rgba(33,58,49,.80) 0%, rgba(33,58,49,.88) 55%, rgba(27,47,39,.94) 100%),
-                url("/bg.jpg") center / cover no-repeat;
+                url("bg.jpg") center / cover no-repeat;
   }
   button { font: inherit; cursor: pointer; border: 0; }
   .hidden { display: none !important; }
@@ -238,7 +238,7 @@
 <nav class="topbar">
   <div class="topbar-in">
     <button class="brand" id="homeLogo" type="button" aria-label="SDcohelp home">
-      <img src="/logo-192.png" alt="SDcohelp logo" class="brandlogo">
+      <img src="logo-192.png" alt="SDcohelp logo" class="brandlogo">
       SDcohelp
     </button>
     <div class="navlinks">
@@ -264,7 +264,7 @@
   <!-- Screen 1: choose language -->
   <section id="pick">
     <div class="hero welcome">
-      <img src="/logo.png" alt="SDcohelp logo: a handshake in front of a globe" class="biglogo">
+      <img src="logo.png" alt="SDcohelp logo: a handshake in front of a globe" class="biglogo">
       <h1>SDcohelp</h1>
       <p class="sub">San Diego · 圣地亚哥 · 聖地牙哥 · San Diego · San Diego</p>
     </div>
@@ -308,6 +308,7 @@
       </div>
     </form>
 
+    <div id="previewNote" class="thinking hidden" role="note">ℹ️ <span id="previewText"></span></div>
     <div id="thinking" class="thinking hidden" role="status" aria-live="polite">
       <span class="bounce" aria-hidden="true"><i></i><i></i><i></i></span>
       <span id="thinkingText"></span>
@@ -474,9 +475,10 @@
   <p class="disclaimer" id="disclaimer"></p>
 </main>
 
-<script src="/site.js?v=13"></script>
-<script src="/forms.js?v=13"></script>
-<script src="/guides/guides.js?v=13"></script>
+<script src="config.js?v=14"></script>
+<script src="site.js?v=14"></script>
+<script src="forms.js?v=14"></script>
+<script src="guides/guides.js?v=14"></script>
 <script>
 const UI = {
   "zh-mandarin": {
@@ -537,6 +539,9 @@ const UI = {
 };
 
 const $ = (id) => document.getElementById(id);
+// where the answer server is: same place as the page, unless config.js says otherwise
+const API = (window.SDCOHELP_API || "").replace(/\/+$/, "");
+const PREVIEW_ONLY = !API && /github\.io$/.test(location.hostname);
 let lang = null, t = UI.en, audio = null, recognizer = null, lastAnswer = "";
 
 function save(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
@@ -581,6 +586,8 @@ function setLanguage(code) {
   $("sheetView").classList.add("hidden");
   // menu bar, home page, About, Guide
   $("langSelect").value = code;
+  $("previewText").textContent = L(SITE_UI.preview);
+  $("previewNote").classList.toggle("hidden", !PREVIEW_ONLY);
   $("langSelect2").value = code;
   $("navHomeT").textContent = L(SITE_UI.home);
   $("navAbout").textContent = L(SITE_UI.about);
@@ -643,7 +650,7 @@ async function ask() {
   $("thinking").classList.remove("hidden");
   const slowTimer = setTimeout(() => { $("thinkingText").textContent = t.still; }, 7000);
   try {
-    const res = await fetch("/api/ask", {
+    const res = await fetch(API + "/api/ask", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question, language: lang })
     });
@@ -748,7 +755,7 @@ async function listen() {
   setAudioState("loading");
   try {
     // 1st choice: ElevenLabs (natural voice) through our server
-    const res = await fetch("/api/speak", {
+    const res = await fetch(API + "/api/speak", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: lastAnswer, language: lang })
     });
@@ -983,7 +990,7 @@ async function readQuestion(q, btn) {
   if (q.type === "choice") text += " " + q.options.map(L).join(", ");
   const done = () => { if (qBtn === btn) stopQuestionAudio(); };
   try {
-    const res = await fetch("/api/speak", { method: "POST", headers: { "Content-Type": "application/json" },
+    const res = await fetch(API + "/api/speak", { method: "POST", headers: { "Content-Type": "application/json" },
                                             body: JSON.stringify({ text, language: lang }) });
     if (!res.ok) throw new Error("tts unavailable");
     if (qBtn !== btn) return;                      // stopped while loading
@@ -1025,7 +1032,7 @@ async function makeSheet() {
   try {
     let result = { answers: {}, summary_en: "", summary_native: "" };
     if (items.length) {
-      const res = await fetch("/api/prepare-form", {
+      const res = await fetch(API + "/api/prepare-form", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ form: formId, language: lang, items })
       });
@@ -1248,7 +1255,7 @@ async function handleShot(file) {
   $("shotUpload").classList.add("hidden");
   try {
     const dataUrl = await shrinkImage(file);
-    const res = await fetch("/api/locate", {
+    const res = await fetch(API + "/api/locate", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ form: shotForm, language: lang, image: dataUrl })
     });

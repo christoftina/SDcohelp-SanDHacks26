@@ -1,6 +1,11 @@
 /* Text for the menu bar, home page, About and Guide.
    Each list: [English, Mandarin (简体), Cantonese (繁體), Spanish, Tagalog] */
 const SITE_UI = {
+  preview:   ["Preview mode: this copy of the website isn't connected to the SDcohelp answer server yet, so questions, voices, and forms won't work here.",
+              "预览模式:这个网站副本还没有连接到 SDcohelp 答案服务器,所以提问、语音和表格在这里无法使用。",
+              "預覽模式:呢個網站副本未連接 SDcohelp 答案伺服器,所以問問題、語音同表格喺度用唔到。",
+              "Modo de vista previa: esta copia del sitio aún no está conectada al servidor de respuestas de SDcohelp, así que las preguntas, las voces y los formularios no funcionan aquí.",
+              "Preview mode: hindi pa nakakonekta ang kopyang ito ng website sa answer server ng SDcohelp, kaya hindi gagana rito ang mga tanong, boses, at form."],
   home:      ["Home", "首页", "主頁", "Inicio", "Home"],
   about:     ["About", "关于", "關於", "Acerca de", "Tungkol"],
   guide:     ["Guide", "使用指南", "使用指南", "Guía", "Gabay"],

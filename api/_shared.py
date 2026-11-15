@@ -12,7 +12,3 @@ _spec.loader.exec_module(app)
 if app.KB is None:
     app.KB = app.KnowledgeBase()      # the Bright Data dataset in data/docs.json
 
-
-class handler(app.Handler):
-    """Vercel calls this class for each request; the app decides what to do by the path."""
-    pass

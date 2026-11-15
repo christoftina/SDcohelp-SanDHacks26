@@ -24,7 +24,7 @@ from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "sdcohelp-7"
+VERSION = "sdcohelp-9"
 ROOT = Path(__file__).resolve().parent
 STATIC = ROOT / "docs"   # the website files (also published by GitHub Pages)
 DATA = ROOT / "data"
@@ -69,7 +69,8 @@ ELEVEN_MODEL = os.environ.get("ELEVENLABS_MODEL", "eleven_multilingual_v2")
 # Websites allowed to call this server from another address (for example GitHub Pages).
 ALLOWED_ORIGINS = [o.strip().rstrip("/") for o in os.environ.get(
     "ALLOWED_ORIGINS", "https://christoftina.github.io").split(",") if o.strip()]
-HOST = os.environ.get("HOST", "127.0.0.1")
+# On Render (or similar hosts) the app must listen on every address; on a laptop only locally.
+HOST = os.environ.get("HOST") or ("0.0.0.0" if os.environ.get("RENDER") else "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 
 LANGUAGES = {
@@ -633,7 +634,7 @@ class Handler(BaseHTTPRequestHandler):
                 traceback.print_exc()
                 return self.send(500, {"error": f"Server problem: {e!r}"})
 
-        if path == "/api/prepare-form":
+        if path in ("/api/prepare-form", "/api/form"):
             form_id = str(body.get("form", ""))
             items = body.get("items") or []
             if form_id not in FORM_IDS or not isinstance(items, list) or len(items) > 30:

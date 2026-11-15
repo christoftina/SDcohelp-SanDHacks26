@@ -1,5 +1,4 @@
 .env
-data/docs.json
 data/pages/
 __pycache__/
 logs/
